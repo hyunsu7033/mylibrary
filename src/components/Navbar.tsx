@@ -185,7 +185,7 @@ export default function Navbar() {
             </div>
 
             <p className="text-xs text-slate-500 leading-relaxed">
-              Google AI Studio 무료 Gemini API 키를 입력하시면, 책 내용에 대한 1:1 심층 티키타카와 줄거리 자동 작성이 활성화됩니다.
+              Google AI Studio의 무료 Gemini API 키를 입력하시면 <strong>Gemini 3.6 Flash / 3.5 Flash</strong> 등 최신 플래시 모델이 우선적으로 연결되어 책에 대한 1:1 심층 티키타카와 감상 토론을 진행합니다.
             </p>
 
             <div className="space-y-2">

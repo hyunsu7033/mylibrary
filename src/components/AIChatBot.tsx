@@ -26,6 +26,7 @@ interface ChatMessage {
   content: string;
   timestamp: string;
   isSimulated?: boolean;
+  model?: string;
 }
 
 export default function AIChatBot({ book }: AIChatBotProps) {
@@ -83,6 +84,7 @@ export default function AIChatBot({ book }: AIChatBotProps) {
         content: data.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isSimulated: data.isSimulated,
+        model: data.model,
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
@@ -101,13 +103,11 @@ export default function AIChatBot({ book }: AIChatBotProps) {
     }
   };
 
-  const handleSaveDialogue = (aiMsg: ChatMessage, msgIndex: number) => {
-    if (savedMsgIds.has(aiMsg.id)) return;
-
-    let userQ = '도서 탐구 대화';
-    for (let i = msgIndex - 1; i >= 0; i--) {
+  const handleSaveDialogue = (msg: ChatMessage, index: number) => {
+    let userPrompt = '도서 탐구 대화';
+    for (let i = index - 1; i >= 0; i--) {
       if (messages[i].role === 'user') {
-        userQ = messages[i].content;
+        userPrompt = messages[i].content;
         break;
       }
     }
@@ -117,39 +117,56 @@ export default function AIChatBot({ book }: AIChatBotProps) {
       bookTitle: book.title,
       bookCoverUrl: book.coverUrl,
       category: book.category,
-      userQuestion: userQ,
-      aiResponse: aiMsg.content,
+      userQuestion: userPrompt,
+      aiResponse: msg.content,
     });
 
-    setSavedMsgIds((prev) => {
-      const next = new Set(prev);
-      next.add(aiMsg.id);
-      return next;
-    });
-
-    confetti({ particleCount: 35, spread: 45, origin: { y: 0.8 } });
-    setToastText(`⭐ 대화가 날짜/시간과 함께 [AI 생각노트]에 보관되었습니다!`);
-    setTimeout(() => setToastText(null), 3500);
+    setSavedMsgIds((prev) => new Set(prev).add(msg.id));
+    setToastText('💡 루카와의 대화가 [AI 생각노트]에 안전하게 보관되었습니다!');
+    confetti({ particleCount: 40, spread: 60 });
+    setTimeout(() => setToastText(null), 3000);
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden flex flex-col h-[600px]">
+    <div className="bg-gradient-to-b from-amber-500/5 to-white rounded-3xl border border-amber-500/20 shadow-xl overflow-hidden flex flex-col h-[580px]">
       
-      {/* Toast Alert */}
-      {toastText && (
-        <div className="bg-amber-500 text-white px-4 py-2 text-xs font-bold flex items-center justify-between animate-fade-in shadow-md">
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5" />
-            {toastText}
+      {/* Header */}
+      <div className="p-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white flex items-center justify-between shadow-md">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl shadow-inner">
+            🤖
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-black tracking-wide">AI 독서 메이트 루카 (Luca)</h3>
+              <span className="text-[10px] bg-white/30 text-white font-bold px-2 py-0.5 rounded-full backdrop-blur-md">
+                1:1 독서 코칭
+              </span>
+            </div>
+            <p className="text-[11px] text-amber-100/90 truncate max-w-xs font-medium">
+              《{book.title}》의 줄거리 및 인물 심리 탐구
+            </p>
+          </div>
+        </div>
+
+        <div className="text-right hidden sm:block">
+          <span className="text-[10px] text-amber-100/80 block">오늘의 독서 친구</span>
+          <span className="text-xs font-bold text-white flex items-center gap-1 justify-end">
+            <Sparkles className="w-3.5 h-3.5" /> 대화형 연구소
           </span>
-          <a href="/journal" className="underline text-[11px] hover:text-amber-100">
-            생각노트 보기 ↗
-          </a>
+        </div>
+      </div>
+
+      {/* Toast Notification */}
+      {toastText && (
+        <div className="bg-emerald-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between transition-all animate-bounce">
+          <span>{toastText}</span>
+          <CheckCircle2 className="w-4 h-4" />
         </div>
       )}
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 bg-slate-50/60">
+      {/* Chat Messages Log */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 text-xs sm:text-sm bg-slate-50/50">
         {messages.map((msg, idx) => {
           const isUser = msg.role === 'user';
           const isSaved = savedMsgIds.has(msg.id);
@@ -160,13 +177,13 @@ export default function AIChatBot({ book }: AIChatBotProps) {
               className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
             >
               <div
-                className={`w-8 h-8 rounded-2xl flex items-center justify-center text-sm shadow-sm shrink-0 ${
+                className={`w-8 h-8 rounded-2xl flex items-center justify-center text-xs font-bold shrink-0 shadow-sm ${
                   isUser
                     ? 'bg-amber-500 text-white'
-                    : 'bg-gradient-to-tr from-cosmic-600 to-indigo-600 text-white'
+                    : 'bg-gradient-to-tr from-purple-600 to-indigo-600 text-white'
                 }`}
               >
-                {isUser ? profile.avatarEmoji : '🤖'}
+                {isUser ? profile.avatarEmoji || '🦊' : '🤖'}
               </div>
 
               <div
@@ -183,8 +200,13 @@ export default function AIChatBot({ book }: AIChatBotProps) {
                     isUser ? 'text-white/70 border-white/10' : 'text-slate-400 border-slate-100'
                   }`}
                 >
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <span>{msg.timestamp}</span>
+                    {msg.model && !msg.isSimulated && (
+                      <span className="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold">
+                        ⚡ {msg.model.replace('gemini-', 'Gemini ')}
+                      </span>
+                    )}
                     {msg.isSimulated && (
                       <span className="text-[9px] bg-amber-100 text-amber-800 px-1 py-0.2 rounded font-medium">
                         스마트시뮬레이션
