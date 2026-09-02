@@ -1,5 +1,5 @@
-import React from 'react';
-import { BookOpen, Plus, Cloud, BarChart3, Settings, Search, Sparkles } from 'lucide-react';
+import type { FC } from 'react';
+import { BookOpen, Plus, Cloud, BarChart3, Settings, Search } from 'lucide-react';
 
 interface HeaderProps {
   searchQuery: string;
@@ -12,7 +12,7 @@ interface HeaderProps {
   authorName: string;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: FC<HeaderProps> = ({
   searchQuery,
   onSearchChange,
   onOpenAddBook,

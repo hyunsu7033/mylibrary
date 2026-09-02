@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
-import { Book, ReadingStatus } from '../types/book';
+import { useState } from 'react';
+import type { FC } from 'react';
+import type { Book } from '../types/book';
 import { BookCard } from './BookCard';
 import {
   LayoutGrid,
   Library,
   List,
-  Filter,
   ArrowUpDown,
   BookOpen,
   Plus,
   Star,
-  CheckCircle,
-  Lightbulb,
 } from 'lucide-react';
 
 interface BookshelfViewProps {
@@ -21,7 +19,7 @@ interface BookshelfViewProps {
   onOpenAddBook: () => void;
 }
 
-export const BookshelfView: React.FC<BookshelfViewProps> = ({
+export const BookshelfView: FC<BookshelfViewProps> = ({
   books,
   searchQuery,
   onSelectBook,

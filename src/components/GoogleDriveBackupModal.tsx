@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Book, AppSettings, BackupData } from '../types/book';
+import { useState } from 'react';
+import type { ChangeEvent, FC } from 'react';
+import type { Book, AppSettings, BackupData } from '../types/book';
 import {
   getGoogleDriveAccessToken,
   uploadBackupToDrive,
   listDriveBackups,
   downloadBackupFromDrive,
-  DriveBackupFile,
 } from '../services/googleDrive';
+import type { DriveBackupFile } from '../services/googleDrive';
 import { exportBackupData, importBackupData } from '../services/storage';
 import {
   X,
@@ -31,7 +32,7 @@ interface GoogleDriveBackupModalProps {
   onOpenSettings: () => void;
 }
 
-export const GoogleDriveBackupModal: React.FC<GoogleDriveBackupModalProps> = ({
+export const GoogleDriveBackupModal: FC<GoogleDriveBackupModalProps> = ({
   isOpen,
   onClose,
   books,
@@ -155,7 +156,7 @@ export const GoogleDriveBackupModal: React.FC<GoogleDriveBackupModalProps> = ({
   };
 
   // 로컬 파일에서 복원
-  const handleImportLocalJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportLocalJson = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 

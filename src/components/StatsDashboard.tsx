@@ -1,12 +1,12 @@
-import React from 'react';
-import { Book } from '../types/book';
-import { BookOpen, CheckCircle, Lightbulb, Sparkles, FileText, TrendingUp, Award, BarChart2 } from 'lucide-react';
+import type { FC } from 'react';
+import type { Book } from '../types/book';
+import { BookOpen, Lightbulb, Sparkles, FileText, Award, BarChart2 } from 'lucide-react';
 
 interface StatsDashboardProps {
   books: Book[];
 }
 
-export const StatsDashboard: React.FC<StatsDashboardProps> = ({ books }) => {
+export const StatsDashboard: FC<StatsDashboardProps> = ({ books }) => {
   const totalBooks = books.length;
   const completedBooks = books.filter((b) => b.status === 'completed').length;
   const readingBooks = books.filter((b) => b.status === 'reading').length;

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Book } from '../types/book';
+import type { FC } from 'react';
+import type { Book } from '../types/book';
 import { BookOpen, CheckCircle, Clock, Sparkles, FileText, Star } from 'lucide-react';
 
 interface BookCardProps {
@@ -7,7 +7,7 @@ interface BookCardProps {
   onClick: () => void;
 }
 
-export const BookCard: React.FC<BookCardProps> = ({ book, onClick }) => {
+export const BookCard: FC<BookCardProps> = ({ book, onClick }) => {
   const progressPercent = book.totalPages && book.currentPage
     ? Math.min(100, Math.round((book.currentPage / book.totalPages) * 100))
     : (book.status === 'completed' ? 100 : 0);

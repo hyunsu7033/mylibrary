@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
+import type { FC } from 'react';
 
 declare global {
   interface Window {
@@ -13,7 +14,7 @@ interface LatexRendererProps {
   className?: string;
 }
 
-export const LatexRenderer: React.FC<LatexRendererProps> = ({ content, className = '' }) => {
+export const LatexRenderer: FC<LatexRendererProps> = ({ content, className = '' }) => {
   const renderedHtml = useMemo(() => {
     if (!content) return '';
 

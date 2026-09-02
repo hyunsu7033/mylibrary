@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Book, ReadingNote, ReadingStatus } from '../types/book';
+import { useState } from 'react';
+import type { FormEvent, FC } from 'react';
+import type { Book, ReadingNote, ReadingStatus } from '../types/book';
 import { AiDiscussion } from './AiDiscussion';
 import { InsightVault } from './InsightVault';
 import { LatexRenderer } from './LatexRenderer';
@@ -13,10 +14,7 @@ import {
   FileText,
   Plus,
   Trash2,
-  CheckCircle2,
-  Calendar,
   Save,
-  Tag,
 } from 'lucide-react';
 
 interface BookDetailModalProps {
@@ -29,7 +27,7 @@ interface BookDetailModalProps {
   onOpenSettings: () => void;
 }
 
-export const BookDetailModal: React.FC<BookDetailModalProps> = ({
+export const BookDetailModal: FC<BookDetailModalProps> = ({
   book,
   apiKey,
   isOpen,
@@ -86,7 +84,7 @@ export const BookDetailModal: React.FC<BookDetailModalProps> = ({
   };
 
   // 새 메모 저장
-  const handleSaveNote = (e: React.FormEvent) => {
+  const handleSaveNote = (e: FormEvent) => {
     e.preventDefault();
     if (!noteForm.thought?.trim() && !noteForm.quote?.trim()) return;
 

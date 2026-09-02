@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { searchYes24Books, convertSearchResultToBook, Yes24SearchResult } from '../services/yes24';
-import { Book, ReadingStatus } from '../types/book';
-import { Search, Plus, BookOpen, X, Loader2, Sparkles, Edit3 } from 'lucide-react';
+import { useState } from 'react';
+import type { FormEvent, FC } from 'react';
+import { searchYes24Books, convertSearchResultToBook } from '../services/yes24';
+import type { Yes24SearchResult } from '../services/yes24';
+import type { Book, ReadingStatus } from '../types/book';
+import { Search, Plus, BookOpen, X, Loader2, Edit3 } from 'lucide-react';
 
 interface BookSearchModalProps {
   isOpen: boolean;
@@ -9,7 +11,7 @@ interface BookSearchModalProps {
   onAddBook: (book: Book) => void;
 }
 
-export const BookSearchModal: React.FC<BookSearchModalProps> = ({
+export const BookSearchModal: FC<BookSearchModalProps> = ({
   isOpen,
   onClose,
   onAddBook,
@@ -35,7 +37,7 @@ export const BookSearchModal: React.FC<BookSearchModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
@@ -58,7 +60,7 @@ export const BookSearchModal: React.FC<BookSearchModalProps> = ({
     onClose();
   };
 
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!manualForm.title.trim()) return;
 

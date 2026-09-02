@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Book, WritingInsight } from '../types/book';
+import { useState } from 'react';
+import type { FormEvent, FC } from 'react';
+import type { Book, WritingInsight } from '../types/book';
 import { LatexRenderer } from './LatexRenderer';
 import { LatexHelper } from './LatexHelper';
 import { Lightbulb, Plus, Trash2, Copy, Check, FileDown, Edit2, Tag, BookMarked } from 'lucide-react';
@@ -9,7 +10,7 @@ interface InsightVaultProps {
   onUpdateBook: (updated: Book) => void;
 }
 
-export const InsightVault: React.FC<InsightVaultProps> = ({ book, onUpdateBook }) => {
+export const InsightVault: FC<InsightVaultProps> = ({ book, onUpdateBook }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -27,7 +28,7 @@ export const InsightVault: React.FC<InsightVaultProps> = ({ book, onUpdateBook }
 
   const [tagsInput, setTagsInput] = useState('');
 
-  const handleSaveInsight = (e: React.FormEvent) => {
+  const handleSaveInsight = (e: FormEvent) => {
     e.preventDefault();
     if (!form.title?.trim()) return;
 

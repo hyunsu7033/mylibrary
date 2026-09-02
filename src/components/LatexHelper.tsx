@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 
 interface LatexHelperProps {
   onInsert: (tex: string) => void;
@@ -18,7 +18,7 @@ const LATEX_PRESETS = [
   { label: '슈뢰딩거', tex: 'i\\hbar \\frac{\\partial}{\\partial t}\\Psi = \\hat{H}\\Psi', preview: 'Schrödinger' },
 ];
 
-export const LatexHelper: React.FC<LatexHelperProps> = ({ onInsert }) => {
+export const LatexHelper: FC<LatexHelperProps> = ({ onInsert }) => {
   return (
     <div className="latex-helper-bar flex flex-wrap items-center gap-1.5 p-2 bg-stone-900/60 border border-stone-800 rounded-lg text-xs">
       <span className="text-amber-400 font-semibold px-1 flex items-center gap-1">

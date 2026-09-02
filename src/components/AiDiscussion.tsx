@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Book, AiChatMessage, WritingInsight } from '../types/book';
+import { useState, useRef, useEffect } from 'react';
+import type { FormEvent, FC } from 'react';
+import type { Book, AiChatMessage, WritingInsight } from '../types/book';
 import { sendBookChatMessage, extractWritingInsightFromDiscussion } from '../services/gemini';
 import { LatexRenderer } from './LatexRenderer';
 import { LatexHelper } from './LatexHelper';
@@ -12,7 +13,7 @@ interface AiDiscussionProps {
   onOpenSettings: () => void;
 }
 
-export const AiDiscussion: React.FC<AiDiscussionProps> = ({
+export const AiDiscussion: FC<AiDiscussionProps> = ({
   book,
   apiKey,
   onUpdateBook,
@@ -32,7 +33,7 @@ export const AiDiscussion: React.FC<AiDiscussionProps> = ({
     scrollToBottom();
   }, [book.aiChatHistory, isLoading]);
 
-  const handleSendMessage = async (e?: React.FormEvent) => {
+  const handleSendMessage = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     if (!inputMessage.trim() || isLoading) return;
 

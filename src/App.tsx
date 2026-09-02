@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Book, AppSettings } from './types/book';
+import { useState, useEffect } from 'react';
+import type { Book, AppSettings } from './types/book';
 import { getStoredBooks, saveBooks, getStoredSettings, saveSettings } from './services/storage';
 import { Header } from './components/Header';
 import { StatsDashboard } from './components/StatsDashboard';

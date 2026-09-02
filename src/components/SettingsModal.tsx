@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { AppSettings } from '../types/book';
+import { useState } from 'react';
+import type { FormEvent, FC } from 'react';
+import type { AppSettings } from '../types/book';
 import { X, Key, Cloud, User, Palette, ExternalLink, Save, Check } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -9,7 +10,7 @@ interface SettingsModalProps {
   onSaveSettings: (newSettings: Partial<AppSettings>) => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({
+export const SettingsModal: FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   settings,
@@ -23,7 +24,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = (e: FormEvent) => {
     e.preventDefault();
     onSaveSettings({
       geminiApiKey: geminiApiKey.trim(),
