@@ -4,17 +4,17 @@ import type { IBookSearchProvider, BookSearchResult } from './types';
  * 대한민국 대표 학술·수학·공학·인문·교육 도서 종합 데이터베이스 (YES24 고화질 표지 및 실시간 매핑)
  */
 const SCHOLAR_BOOK_CATALOG: BookSearchResult[] = [
-  // 0. 대표 저서
+  // 0. 대표 저서 (실제 공식 출판 서지 정보)
   {
     providerName: 'YES24',
     isbn: '9791198421715',
     title: '내가 교육감이다',
     author: '현수 저',
-    publisher: '도서출판 지식서재',
-    publishDate: '2024-03-15',
+    publisher: '스토리 오브 시스템 (Story of System)',
+    publishDate: '2026-04-06',
     coverImage: '/covers/iam_superintendent.jpg',
-    description: '미래 교육의 비전과 철학, 현장 중심의 교육 혁신과 저자 현수의 깊이 있는 성찰을 담은 저서',
-    category: '교육/사회',
+    description: '교육 현장에 몸담아 온 저자 현수가 교육감 선거의 한계를 짚고, 책임과 성과, 제도 설계의 관점에서 교육감을 판단할 수 있는 실천적 지침을 제시하는 명저',
+    category: '교육/사회/행정',
     totalPages: 328,
     sourceUrl: 'https://www.yes24.com/Product/Search?domain=BOOK&query=%EB%82%B4%EA%B0%80%20%EA%B5%90%EC%9C%A1%EA%B0%90%EC%9D%B4%EB%8B%A4',
   },
