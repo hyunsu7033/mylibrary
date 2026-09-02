@@ -7,13 +7,13 @@ const SCHOLAR_BOOK_CATALOG: BookSearchResult[] = [
   // 0. 대표 저서
   {
     providerName: 'YES24',
-    isbn: '9791197821035',
+    isbn: '9791198421715',
     title: '내가 교육감이다',
     author: '현수 저',
     publisher: '도서출판 지식서재',
     publishDate: '2024-03-15',
     coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
-    description: '미래 교육의 비전과 철학, 현장 중심의 교육 혁신과 저자의 깊이 있는 성찰을 담은 저서',
+    description: '미래 교육의 비전과 철학, 현장 중심의 교육 혁신과 저자 현수의 깊이 있는 성찰을 담은 저서',
     category: '교육/사회',
     totalPages: 328,
     sourceUrl: 'https://www.yes24.com/Product/Search?domain=BOOK&query=%EB%82%B4%EA%B0%80%20%EA%B5%90%EC%9C%A1%EA%B0%90%EC%9D%B4%EB%8B%A4',
@@ -332,14 +332,26 @@ export class SmartScholarSearchProvider implements IBookSearchProvider {
     // 1. 카탈로그에서 키워드 및 정규화 문자열 연관도 매칭
     const matched = SCHOLAR_BOOK_CATALOG.filter((book) => {
       const bookNormTitle = book.title.toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
-      const fullText = `${book.title} ${book.author} ${book.publisher} ${book.description} ${book.category} ${book.isbn}`.toLowerCase();
+      const bookNormAuthor = book.author.toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+      const bookNormIsbn = book.isbn.replace(/[^0-9]/g, '');
+      const cleanIsbnQuery = rawClean.replace(/[^0-9]/g, '');
 
-      // 완전 포함 또는 정규화 포함 확인
-      if (bookNormTitle.includes(normalized) || normalized.includes(bookNormTitle)) {
+      // ISBN 완전 일치
+      if (cleanIsbnQuery && cleanIsbnQuery.length >= 10 && bookNormIsbn.includes(cleanIsbnQuery)) {
         return true;
       }
 
-      // 키워드별 부분 매칭 (2글자 이상)
+      // 제목 또는 저자명 완전/부분 포함
+      if (
+        bookNormTitle.includes(normalized) ||
+        normalized.includes(bookNormTitle) ||
+        (normalized.includes('교육감') && (normalized.includes('내가') || normalized.includes('현수')))
+      ) {
+        return true;
+      }
+
+      // 키워드별 부분 매칭 (제목, 저자, 설명)
+      const fullText = `${book.title} ${book.author} ${book.publisher} ${book.description} ${book.category} ${book.isbn}`.toLowerCase();
       return keywords.some((kw) => kw.length >= 2 && fullText.includes(kw));
     });
 
