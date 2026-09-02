@@ -12,7 +12,7 @@ const SCHOLAR_BOOK_CATALOG: BookSearchResult[] = [
     author: '현수 저',
     publisher: '도서출판 지식서재',
     publishDate: '2024-03-15',
-    coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+    coverImage: '/covers/iam_superintendent.jpg',
     description: '미래 교육의 비전과 철학, 현장 중심의 교육 혁신과 저자 현수의 깊이 있는 성찰을 담은 저서',
     category: '교육/사회',
     totalPages: 328,
