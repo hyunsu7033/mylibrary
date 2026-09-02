@@ -301,7 +301,7 @@ const SCHOLAR_BOOK_CATALOG: BookSearchResult[] = [
  * 스마트 학술 도서 지능형 검색 프로바이더
  */
 export class SmartScholarSearchProvider implements IBookSearchProvider {
-  readonly name = 'YES24 학술 도서 카탈로그';
+  readonly name = 'YES24 카탈로그';
 
   async search(query: string): Promise<BookSearchResult[]> {
     const clean = query.trim().toLowerCase();
@@ -319,86 +319,21 @@ export class SmartScholarSearchProvider implements IBookSearchProvider {
       return matched;
     }
 
-    // 2. 만약 직접 매칭되지 않는 새로운 주제일 경우, 검색어를 바탕으로 실시간 맞춤 학술 도서 목록 8권 자동 합성 생성
+    // 2. 일치하는 사전 등록 도서가 없을 경우, 사용자가 입력한 제목의 정확한 단일 도서 카드 생성 (인위적인 가상 시리즈 제거)
     return [
       {
         providerName: 'YES24',
-        isbn: '978' + Math.floor(1000000000 + Math.random() * 9000000000),
-        title: `${query}: 기초 이론과 원리`,
-        author: '학술연구팀 편저',
-        publisher: '자유아카데미',
+        isbn: clean.replace(/[^0-9X]/gi, '') || '978' + Math.floor(1000000000 + Math.random() * 9000000000),
+        title: query.trim(),
+        author: '저자명을 입력해주세요',
+        publisher: '출판사명을 입력해주세요',
         publishDate: new Date().toISOString().slice(0, 10),
-        coverImage: 'https://image.yes24.com/goods/99039019/XL',
-        description: `《${query}》의 핵심 개념과 수학적·공학적 모델링을 체계적으로 다룬 전문 연구 도서`,
-        category: '수학/공학',
-        totalPages: 380,
-        sourceUrl: `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query)}`,
+        coverImage: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
+        description: `《${query.trim()}》 도서의 독서 및 연구 기록입니다.`,
+        category: '일반/학술',
+        totalPages: 300,
+        sourceUrl: `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query.trim())}`,
       },
-      {
-        providerName: 'YES24',
-        isbn: '978' + Math.floor(1000000000 + Math.random() * 9000000000),
-        title: `응용 ${query}과 실전 모델링`,
-        author: '대한공학회',
-        publisher: '한빛아카데미',
-        publishDate: new Date().toISOString().slice(0, 10),
-        coverImage: 'https://image.yes24.com/goods/90530737/XL',
-        description: `${query}을 최신 연구와 산업 현장의 수식에 적용하는 실용적인 가이드`,
-        category: '수학/공학',
-        totalPages: 420,
-        sourceUrl: `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query)}`,
-      },
-      {
-        providerName: 'YES24',
-        isbn: '978' + Math.floor(1000000000 + Math.random() * 9000000000),
-        title: `다시 읽는 ${query}의 쓸모`,
-        author: '전문 기획단 저',
-        publisher: '더퀘스트',
-        publishDate: new Date().toISOString().slice(0, 10),
-        coverImage: 'https://image.yes24.com/goods/89498263/XL',
-        description: `${query}을 통해 복잡한 세상을 통찰하고 수식의 아름다움을 탐구하는 교양서`,
-        category: '자연과학/교양',
-        totalPages: 310,
-        sourceUrl: `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query)}`,
-      },
-      {
-        providerName: 'YES24',
-        isbn: '978' + Math.floor(1000000000 + Math.random() * 9000000000),
-        title: `파이썬으로 구현하는 ${query} 알고리즘`,
-        author: '소프트웨어 엔지니어링 랩',
-        publisher: '제이펍',
-        publishDate: new Date().toISOString().slice(0, 10),
-        coverImage: 'https://image.yes24.com/goods/34970901/XL',
-        description: `${query}의 수학 공식을 코드로 직접 구현하며 배우는 실전 프로그래밍`,
-        category: '컴퓨터/IT',
-        totalPages: 460,
-        sourceUrl: `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query)}`,
-      },
-      {
-        providerName: 'YES24',
-        isbn: '978' + Math.floor(1000000000 + Math.random() * 9000000000),
-        title: `${query} 명강의 (개정판)`,
-        author: '전국 이공계 교수진 공저',
-        publisher: '북스힐',
-        publishDate: new Date().toISOString().slice(0, 10),
-        coverImage: 'https://image.yes24.com/goods/97885002/XL',
-        description: `이공계 대학생 및 연구자를 위한 ${query} 심화 해설 및 연습문제 정해`,
-        category: '수학/공학',
-        totalPages: 520,
-        sourceUrl: `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query)}`,
-      },
-      {
-        providerName: 'YES24',
-        isbn: '978' + Math.floor(1000000000 + Math.random() * 9000000000),
-        title: `${query}의 역사와 철학적 배경`,
-        author: '과학사학회',
-        publisher: '사이언스북스',
-        publishDate: new Date().toISOString().slice(0, 10),
-        coverImage: 'https://image.yes24.com/goods/1452420/XL',
-        description: `${query}의 태동부터 현대 첨단 이론에 이르기까지 인류 지성사의 발전 과정`,
-        category: '인문/과학사',
-        totalPages: 360,
-        sourceUrl: `https://www.yes24.com/Product/Search?domain=BOOK&query=${encodeURIComponent(query)}`,
-      }
     ];
   }
 }
