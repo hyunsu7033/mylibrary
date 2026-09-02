@@ -1,5 +1,6 @@
-import { IBookSearchProvider, BookSearchResult } from './types';
+import type { IBookSearchProvider, BookSearchResult } from './types';
 import { Yes24SearchProvider } from './Yes24SearchProvider';
+import { GoogleBooksSearchProvider } from './GoogleBooksSearchProvider';
 import { OpenLibrarySearchProvider } from './OpenLibrarySearchProvider';
 
 /**
@@ -11,36 +12,55 @@ export class BookSearchService {
   constructor(providers?: IBookSearchProvider[]) {
     this.providers = providers || [
       new Yes24SearchProvider(),
+      new GoogleBooksSearchProvider(),
       new OpenLibrarySearchProvider(),
     ];
   }
 
-  /**
-   * 새로운 검색 프로바이더를 기존 코드 수정 없이 동적으로 추가 (OCP)
-   */
   public registerProvider(provider: IBookSearchProvider): void {
     this.providers.push(provider);
   }
 
   /**
-   * 등록된 프로바이더 순서대로 검색을 수행 (Fallback Chain)
+   * 검색어에 대해 등록된 프로바이더들로부터 풍성한 다중 도서 결과 반환
    */
   public async search(query: string): Promise<BookSearchResult[]> {
     const cleanQuery = query.trim();
     if (!cleanQuery) return [];
 
+    let combinedResults: BookSearchResult[] = [];
+
     for (const provider of this.providers) {
       try {
         const results = await provider.search(cleanQuery);
         if (results && results.length > 0) {
-          return results;
+          // 중복 제목/ISBN 제거하며 병합
+          for (const item of results) {
+            const isDuplicate = combinedResults.some(
+              (r) =>
+                (r.isbn && r.isbn === item.isbn) ||
+                r.title.toLowerCase() === item.title.toLowerCase()
+            );
+            if (!isDuplicate) {
+              combinedResults.push(item);
+            }
+          }
+
+          // 이미 8권 이상의 충분한 결과가 확보되면 반환
+          if (combinedResults.length >= 8) {
+            return combinedResults;
+          }
         }
       } catch (err) {
         console.warn(`[BookSearchService] Provider ${provider.name} failed:`, err);
       }
     }
 
-    // 모든 프로바이더에서 결과를 찾지 못했을 때의 안전한 폴백 템플릿 반환
+    if (combinedResults.length > 0) {
+      return combinedResults;
+    }
+
+    // 결과가 없을 때의 기본 템플릿
     return [
       {
         providerName: 'ManualFallback',
@@ -58,5 +78,4 @@ export class BookSearchService {
   }
 }
 
-// 싱글톤 기본 인스턴스 export
 export const defaultBookSearchService = new BookSearchService();
