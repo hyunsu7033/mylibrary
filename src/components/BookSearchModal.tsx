@@ -53,7 +53,15 @@ export const BookSearchModal: FC<BookSearchModalProps> = ({
     }
   };
 
-  const handleSelectResult = (result: Yes24SearchResult, status: ReadingStatus = 'reading') => {
+  const handleSelectResult = (
+    result: Yes24SearchResult,
+    status: ReadingStatus = 'reading',
+    e?: React.MouseEvent
+  ) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const newBook = convertSearchResultToBook(result);
     newBook.status = status;
     onAddBook(newBook);
@@ -209,22 +217,22 @@ export const BookSearchModal: FC<BookSearchModalProps> = ({
                       <div className="flex items-center gap-2 mt-2 pt-2 border-t border-stone-900">
                         <button
                           type="button"
-                          onClick={() => handleSelectResult(item, 'reading')}
-                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1"
+                          onClick={(e) => handleSelectResult(item, 'reading', e)}
+                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" /> 읽는 중으로 추가
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleSelectResult(item, 'completed')}
-                          className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs transition-colors"
+                          onClick={(e) => handleSelectResult(item, 'completed', e)}
+                          className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs transition-colors cursor-pointer"
                         >
                           완독으로 추가
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleSelectResult(item, 'wishlist')}
-                          className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-stone-200 rounded-lg text-xs transition-colors"
+                          onClick={(e) => handleSelectResult(item, 'wishlist', e)}
+                          className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-stone-200 rounded-lg text-xs transition-colors cursor-pointer"
                         >
                           읽고싶은 책
                         </button>
