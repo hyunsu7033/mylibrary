@@ -168,9 +168,10 @@ export const BookSearchModal: FC<BookSearchModalProps> = ({
                   </div>
                 )}
 
-                {!isSearching && hasSearched && searchResults.length === 0 && (
-                  <div className="py-10 text-center text-stone-400">
-                    <p className="text-sm">검색 결과가 없습니다. 도서명을 다시 확인하시거나 상단의 [직접 입력] 탭을 이용해주세요.</p>
+                {!isSearching && searchResults.length > 0 && (
+                  <div className="flex items-center justify-between px-1 text-xs text-stone-400">
+                    <span className="font-semibold text-amber-300">검색 결과: 총 {searchResults.length}권의 도서</span>
+                    <span>원하는 상태의 버튼을 눌러 서재에 담으세요</span>
                   </div>
                 )}
 
