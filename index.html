@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Library - 개인 서재 & 독서 인사이트 워크스페이스</title>
+    <meta name="description" content="수학·공학 수식(LaTeX) 지원, YES24 도서 자동 연동, AI 심층 대화 및 집필용 인사이트 정리를 지원하는 프리미엄 개인 서재" />
+    
+    <!-- Google Fonts: Playfair Display (아카데믹 헤딩), Noto Serif KR (서재 본문), JetBrains Mono (LaTeX/수식/코드) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- KaTeX CSS for LaTeX Math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
+    
+    <!-- Google Identity Services (Google Drive OAuth) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
