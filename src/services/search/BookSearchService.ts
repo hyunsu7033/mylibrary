@@ -4,7 +4,7 @@ import { GoogleBooksSearchProvider } from './GoogleBooksSearchProvider';
 import { OpenLibrarySearchProvider } from './OpenLibrarySearchProvider';
 
 /**
- * OCP 준수: 검색 프로바이더 전략 체인 오케스트레이터
+ * OCP/SRP 준수: 다중 프로바이더 동시 병렬 검색 오케스트레이터
  */
 export class BookSearchService {
   private providers: IBookSearchProvider[];
@@ -22,37 +22,39 @@ export class BookSearchService {
   }
 
   /**
-   * 검색어에 대해 등록된 프로바이더들로부터 풍성한 다중 도서 결과 반환
+   * 모든 검색 프로바이더를 동시에 병렬 호출하여 풍성한 다중 도서 결과 집계 (최대 30권)
    */
   public async search(query: string): Promise<BookSearchResult[]> {
     const cleanQuery = query.trim();
     if (!cleanQuery) return [];
 
-    let combinedResults: BookSearchResult[] = [];
+    // 모든 프로바이더를 병렬(Parallel)로 동시 실행
+    const promises = this.providers.map((p) => p.search(cleanQuery));
+    const settled = await Promise.allSettled(promises);
 
-    for (const provider of this.providers) {
-      try {
-        const results = await provider.search(cleanQuery);
-        if (results && results.length > 0) {
-          // 중복 제목/ISBN 제거하며 병합
-          for (const item of results) {
-            const isDuplicate = combinedResults.some(
-              (r) =>
-                (r.isbn && r.isbn === item.isbn) ||
-                r.title.toLowerCase() === item.title.toLowerCase()
+    const combinedResults: BookSearchResult[] = [];
+
+    for (const res of settled) {
+      if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+        for (const item of res.value) {
+          if (!item.title) continue;
+
+          // 제목 정규화 (공백/특수문자 제거 후 중복 비교)
+          const normalizedTitle = item.title.toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+          
+          const isDuplicate = combinedResults.some((r) => {
+            const rNorm = r.title.toLowerCase().replace(/[^a-z0-9가-힣]/g, '');
+            return (
+              (r.isbn && item.isbn && r.isbn === item.isbn && r.isbn !== 'ISBN-UNKNOWN') ||
+              rNorm === normalizedTitle ||
+              (rNorm.includes(normalizedTitle) && Math.abs(rNorm.length - normalizedTitle.length) < 3)
             );
-            if (!isDuplicate) {
-              combinedResults.push(item);
-            }
-          }
+          });
 
-          // 이미 8권 이상의 충분한 결과가 확보되면 반환
-          if (combinedResults.length >= 8) {
-            return combinedResults;
+          if (!isDuplicate) {
+            combinedResults.push(item);
           }
         }
-      } catch (err) {
-        console.warn(`[BookSearchService] Provider ${provider.name} failed:`, err);
       }
     }
 
@@ -60,7 +62,7 @@ export class BookSearchService {
       return combinedResults;
     }
 
-    // 결과가 없을 때의 기본 템플릿
+    // 모든 프로바이더 실패 시 기본 fallback 템플릿
     return [
       {
         providerName: 'ManualFallback',
