@@ -1,14 +1,61 @@
-import { Book, AiChatMessage, WritingInsight } from '../../types/book';
-import { IAiDiscussionProvider } from './types';
-
-const GEMINI_API_ENDPOINT =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+import type { Book, AiChatMessage, WritingInsight } from '../../types/book';
+import type { IAiDiscussionProvider } from './types';
 
 /**
- * Google Gemini 2.5 Flash 기반 AI 프로바이더 구현체
+ * Gemini 모델 우선순위 Fallback 체인 (요구사항: 3.7 flash -> 3.6 flash -> 3.5 flash 순 적용)
+ */
+const GEMINI_MODELS_PRIORITY = [
+  'gemini-3.7-flash',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-2.5-flash',
+  'gemini-1.5-flash',
+];
+
+/**
+ * Google Gemini 다중 모델 자동 폴백(Fallback) AI 프로바이더 구현체
  */
 export class GeminiAiProvider implements IAiDiscussionProvider {
-  readonly providerName = 'Google Gemini 2.5 Flash';
+  readonly providerName = 'Google Gemini (3.7 Flash → 3.6 Flash → 3.5 Flash)';
+
+  /**
+   * 모델 우선순위 순서대로 generateContent 호출 (Fallback Chain)
+   */
+  private async executeWithFallback(
+    apiKey: string,
+    bodyPayload: any
+  ): Promise<{ text: string; modelUsed: string }> {
+    let lastError: any = null;
+
+    for (const model of GEMINI_MODELS_PRIORITY) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyPayload),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (replyText) {
+            console.log(`[GeminiAiProvider] Successfully responded using model: ${model}`);
+            return { text: replyText, modelUsed: model };
+          }
+        } else {
+          const errData = await response.json().catch(() => ({}));
+          console.warn(`[GeminiAiProvider] Model ${model} failed (${response.status}):`, errData);
+          lastError = new Error(errData.error?.message || `Model ${model} returned status ${response.status}`);
+        }
+      } catch (err) {
+        console.warn(`[GeminiAiProvider] Network error with model ${model}:`, err);
+        lastError = err;
+      }
+    }
+
+    throw lastError || new Error('모든 Gemini 모델(3.7, 3.6, 3.5, 2.5)에 대한 요청이 실패했습니다.');
+  }
 
   async sendMessage(
     apiKey: string,
@@ -92,30 +139,16 @@ ${insightsContext || '없음'}
       parts: [{ text: currentPrompt }],
     });
 
-    const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 2048,
-        },
-      }),
-    });
+    const payload = {
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 2048,
+      },
+    };
 
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.error?.message || `API 요청 실패 (Status: ${response.status})`);
-    }
-
-    const data = await response.json();
-    const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!replyText) {
-      throw new Error('응답을 생성하지 못했습니다.');
-    }
-
-    return replyText;
+    const result = await this.executeWithFallback(apiKey, payload);
+    return result.text;
   }
 
   async extractWritingInsight(
@@ -144,26 +177,17 @@ ${contextText}
   "tags": ["태그1", "태그2"]
 }`;
 
-    const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.3,
-          responseMimeType: 'application/json',
-        },
-      }),
-    });
+    const payload = {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.3,
+        responseMimeType: 'application/json',
+      },
+    };
 
-    if (!response.ok) {
-      throw new Error('인사이트 생성 요청 실패');
-    }
-
-    const data = await response.json();
-    const rawJson = data.candidates?.[0]?.content?.parts?.[0]?.text;
     try {
-      return JSON.parse(rawJson);
+      const result = await this.executeWithFallback(apiKey, payload);
+      return JSON.parse(result.text);
     } catch (err) {
       return {
         title: '새로운 집필 아이디어',
