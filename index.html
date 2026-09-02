@@ -1,23 +1,62 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Library - 개인 서재 & 독서 인사이트 워크스페이스</title>
+    <title>My Scholar Library - 개인 서재 & 독서 인사이트 워크스페이스</title>
     <meta name="description" content="수학·공학 수식(LaTeX) 지원, YES24 도서 자동 연동, AI 심층 대화 및 집필용 인사이트 정리를 지원하는 프리미엄 개인 서재" />
     
-    <!-- Google Fonts: Playfair Display (아카데믹 헤딩), Noto Serif KR (서재 본문), JetBrains Mono (LaTeX/수식/코드) -->
+    <!-- Google Fonts: Playfair Display, Noto Serif KR, Fira Code, Pretendard -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- KaTeX CSS for LaTeX Math rendering -->
+    <!-- Tailwind CSS CDN (런타임 완벽 렌더링 지원) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Noto Serif KR"', '"Playfair Display"', 'serif'],
+              mono: ['"Fira Code"', 'monospace'],
+              sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            },
+            colors: {
+              amber: {
+                50: '#fffbeb',
+                100: '#fef3c7',
+                200: '#fde68a',
+                300: '#fcd34d',
+                400: '#fbbf24',
+                500: '#f59e0b',
+                600: '#d97706',
+                700: '#b45309',
+                800: '#92400e',
+                900: '#78350f',
+                950: '#451a03',
+              },
+              stone: {
+                800: '#292524',
+                850: '#201d1b',
+                900: '#1c1917',
+                950: '#0c0a09',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- KaTeX CSS & JS for LaTeX Math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.css" crossorigin="anonymous">
-    
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.21/dist/katex.min.js"></script>
+
     <!-- Google Identity Services (Google Drive OAuth) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
-  <body>
+  <body class="bg-[#0c0a09] text-stone-100 min-h-screen antialiased">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
