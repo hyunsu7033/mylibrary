@@ -186,18 +186,18 @@ export const BookSearchModal: FC<BookSearchModalProps> = ({
                 {!isSearching && searchResults.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex gap-4 p-3.5 bg-stone-950/60 border border-stone-800/80 rounded-xl hover:border-amber-500/40 transition-colors group"
+                    className="p-3.5 bg-stone-950/60 border border-stone-800/80 rounded-xl hover:border-amber-500/40 transition-colors group"
                   >
-                    <img
-                      src={item.coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80'}
-                      alt={item.title}
-                      className="w-20 h-28 object-cover rounded-lg shadow-md bg-stone-900 flex-shrink-0"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80';
-                      }}
-                    />
-                    <div className="flex flex-col justify-between flex-grow min-w-0">
-                      <div>
+                    <div className="flex gap-4">
+                      <img
+                        src={item.coverImage || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80'}
+                        alt={item.title}
+                        className="w-20 h-28 object-cover rounded-lg shadow-md bg-stone-900 flex-shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80';
+                        }}
+                      />
+                      <div className="flex-grow min-w-0">
                         <h4 className="font-serif font-bold text-stone-100 text-sm line-clamp-1 group-hover:text-amber-300">
                           {item.title}
                         </h4>
@@ -213,30 +213,31 @@ export const BookSearchModal: FC<BookSearchModalProps> = ({
                           </span>
                         )}
                       </div>
+                    </div>
 
-                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-stone-900">
-                        <button
-                          type="button"
-                          onClick={(e) => handleSelectResult(item, 'reading', e)}
-                          className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-stone-950 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1 cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5" /> 읽는 중으로 추가
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => handleSelectResult(item, 'completed', e)}
-                          className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs transition-colors cursor-pointer"
-                        >
-                          완독으로 추가
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => handleSelectResult(item, 'wishlist', e)}
-                          className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-stone-200 rounded-lg text-xs transition-colors cursor-pointer"
-                        >
-                          읽고싶은 책
-                        </button>
-                      </div>
+                    {/* 추가 버튼 - 항상 보이는 영역 */}
+                    <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-stone-800">
+                      <button
+                        type="button"
+                        onClick={(e) => handleSelectResult(item, 'reading', e)}
+                        className="flex-1 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-stone-950 font-semibold rounded-lg text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-amber-900/30"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> 읽는 중으로 추가
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleSelectResult(item, 'completed', e)}
+                        className="flex-1 px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs transition-colors cursor-pointer"
+                      >
+                        완독으로 추가
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleSelectResult(item, 'wishlist', e)}
+                        className="flex-1 px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-400 hover:text-stone-200 rounded-lg text-xs transition-colors cursor-pointer"
+                      >
+                        읽고싶은 책
+                      </button>
                     </div>
                   </div>
                 ))}
