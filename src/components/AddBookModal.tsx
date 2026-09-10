@@ -7,12 +7,17 @@ import {
   BookOpen, 
   Sparkles, 
   Check, 
-  ExternalLink,
-  PlusCircle,
-  Tag
+  ExternalLink, 
+  PlusCircle, 
+  Tag, 
+  ChevronLeft, 
+  ChevronRight, 
+  Star, 
+  SlidersHorizontal 
 } from 'lucide-react';
 import { saveStoredPersonalBook } from '@/lib/db';
 import { PersonalBook, ReadingStatus } from '@/lib/types';
+import { Yes24Order } from '@/lib/yes24';
 import confetti from 'canvas-confetti';
 
 interface AddBookModalProps {
@@ -21,8 +26,21 @@ interface AddBookModalProps {
   onAdded: () => void;
 }
 
+const SORT_OPTIONS: { label: string; value: Yes24Order; description: string }[] = [
+  { label: '인기도순', value: 'SINDEX_ONLY', description: '가장 많이 팔리고 사랑받는 책' },
+  { label: '정확도순', value: 'RELATION', description: '검색어와 가장 연관성 높은 책' },
+  { label: '신상품순', value: 'RECENT', description: '가장 최근에 출간된 최신 도서' },
+  { label: '등록일순', value: 'REG_DTS', description: '데이터베이스에 등록된 순서' },
+  { label: '평점순', value: 'CONT_CNT', description: '독자 평점이 높은 명작 도서' },
+  { label: '최저가순', value: 'LOW_PRICE', description: '실속 있는 알뜰 가격 도서' },
+];
+
 export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentSort, setCurrentSort] = useState<Yes24Order>('SINDEX_ONLY');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -43,29 +61,55 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
 
   if (!isOpen) return null;
 
-  const handleSearchYES24 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
+  const performSearch = async (query: string, sort: Yes24Order, page: number = 1) => {
+    if (!query.trim()) return;
 
     setIsSearching(true);
     setHasSearched(true);
-    setSearchResults([]);
-    setSelectedBook(null);
 
     try {
-      const res = await fetch(`/api/books/yes24?q=${encodeURIComponent(searchQuery.trim())}`);
+      const res = await fetch(
+        `/api/books/yes24?q=${encodeURIComponent(query.trim())}&order=${sort}&page=${page}`
+      );
       const data = await res.json();
       if (data.items && data.items.length > 0) {
         setSearchResults(data.items);
+        setCurrentPage(data.currentPage || page);
+        setTotalPages(data.totalPages || 1);
+        setTotalCount(data.totalCount || data.items.length);
       } else {
         setSearchResults([]);
+        setCurrentPage(1);
+        setTotalPages(1);
+        setTotalCount(0);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Search error:', err);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleSearchYES24 = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    setSelectedBook(null);
+    performSearch(searchQuery, currentSort, 1);
+  };
+
+  const handleSortChange = (newSort: Yes24Order) => {
+    setCurrentSort(newSort);
+    setCurrentPage(1);
+    if (searchQuery.trim()) {
+      performSearch(searchQuery, newSort, 1);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) return;
+    setCurrentPage(newPage);
+    performSearch(searchQuery, currentSort, newPage);
   };
 
   const handleSelectSearchResult = (item: any) => {
@@ -73,10 +117,10 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
     setTitle(item.title || '');
     setAuthor(item.author || '');
     setPublisher(item.publisher || '');
-    setIsbn(item.isbn || '');
+    setIsbn(item.isbn || item.goodsNo || '');
     setPrice(item.price || 12000);
     setCoverUrl(item.coverUrl || '');
-    setYes24Url(item.yes24Url || (item.isbn ? `https://www.yes24.com/Product/Search?domain=BOOK&query=${item.isbn}` : ''));
+    setYes24Url(item.yes24Url || (item.goodsNo ? `https://www.yes24.com/Product/Goods/${item.goodsNo}` : ''));
     setCategory(item.category || '문학/소설');
     setSummary(item.summary || '');
   };
@@ -123,96 +167,213 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-500/10 to-orange-500/10">
+        <div className="px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5">
           <div>
-            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 px-2 py-0.5 rounded-full">
-              국내외 도서 실시간 연동
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider bg-amber-100 px-2.5 py-0.5 rounded-full">
+                YES24 실시간 도서 검색 엔진
+              </span>
+              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                수만 권 실시간 정렬 & 페이지네이션 지원
+              </span>
+            </div>
             <h3 className="text-lg sm:text-xl font-black text-slate-900 mt-1 flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-amber-600" />
+              <PlusCircle className="w-5 h-5 text-amber-600 shrink-0" />
               <span>내 서재에 새 책 등록하기</span>
             </h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
-            <X className="w-6 h-6" />
+          <button 
+            onClick={onClose} 
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body (Scrollable) */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
           
-          {/* Live Search Box */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
-            <label className="block font-bold text-slate-800 text-xs">
-              🔍 실시간 도서 검색 (국내도서 · 외서 · 원서 검색 가능)
-            </label>
+          {/* Live Search & Sort Box */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3.5">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <Search className="w-3.5 h-3.5 text-amber-600" />
+                <span>YES24 실시간 도서 검색 및 스마트 정렬</span>
+              </label>
+              {totalCount > 0 && (
+                <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-200/60">
+                  총 <strong className="font-bold">{totalCount.toLocaleString()}</strong>권 이상 검색됨
+                </span>
+              )}
+            </div>
+
+            {/* Search Input Bar */}
             <form onSubmit={handleSearchYES24} className="flex gap-2">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="책 제목, 저자, 영문 원서명 (예: We Are As Gods, 사피엔스, 와니니, 돈의 속성...)"
-                className="flex-1 px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                placeholder="도서명, 키워드, 작가명 검색 (예: 질문, 와니니, 사피엔스, 아몬드, 역행자...)"
+                className="flex-1 px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium shadow-sm"
               />
               <button
                 type="submit"
                 disabled={isSearching || !searchQuery.trim()}
-                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition flex items-center gap-1.5 shrink-0 shadow"
+                className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl transition flex items-center gap-1.5 shrink-0 shadow disabled:opacity-50"
               >
                 <Search className="w-4 h-4" />
-                <span>{isSearching ? '검색 중...' : '도서 검색'}</span>
+                <span>{isSearching ? '검색 중...' : '검색'}</span>
               </button>
             </form>
 
+            {/* Sorting Tabs / Chips */}
+            <div className="pt-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-semibold mb-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-slate-400" />
+                <span>정렬 기준 선택:</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => handleSortChange(opt.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                      currentSort === opt.value
+                        ? 'bg-amber-600 text-white shadow-sm ring-2 ring-amber-600/30'
+                        : 'bg-white text-slate-600 border border-slate-200 hover:border-amber-300 hover:bg-amber-50/50'
+                    }`}
+                    title={opt.description}
+                  >
+                    <span>{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Search Results List */}
             {searchResults.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-slate-200 space-y-2">
-                <span className="text-[11px] font-bold text-slate-600 block">
-                  검색 결과 ({searchResults.length}권) - 클릭 시 서지정보가 자동으로 채워집니다:
-                </span>
-                <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
+              <div className="pt-3 border-t border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between text-[11px] text-slate-600 font-bold">
+                  <span>
+                    검색 결과 ({searchResults.length}권 표시됨) · 도서를 클릭하면 아래 폼에 자동 입력됩니다:
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={currentPage <= 1 || isSearching}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className="p-1 rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                      title="이전 페이지"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="text-amber-800 px-1.5 font-mono">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={currentPage >= totalPages || isSearching}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className="p-1 rounded bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                      title="다음 페이지"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
                   {searchResults.map((item) => (
                     <button
-                      key={item.id}
+                      key={item.id || item.goodsNo}
                       type="button"
                       onClick={() => handleSelectSearchResult(item)}
                       className={`p-2.5 rounded-xl border text-left flex items-center gap-3 transition ${
-                        selectedBook?.id === item.id
+                        selectedBook?.id === item.id || selectedBook?.goodsNo === item.goodsNo
                           ? 'border-amber-500 bg-amber-50 ring-2 ring-amber-500/20'
                           : 'border-slate-200 bg-white hover:border-amber-300 hover:bg-amber-50/50'
                       }`}
                     >
                       {item.coverUrl ? (
-                        <img src={item.coverUrl} alt={item.title} className="w-9 h-12 object-cover rounded shadow-sm shrink-0" />
+                        <img 
+                          src={item.coverUrl} 
+                          alt={item.title} 
+                          className="w-11 h-15 object-cover rounded shadow-sm shrink-0 border border-slate-100" 
+                        />
                       ) : (
-                        <div className="w-9 h-12 rounded bg-amber-100 flex items-center justify-center text-sm shrink-0">📖</div>
+                        <div className="w-11 h-15 rounded bg-amber-100 flex items-center justify-center text-base shrink-0">
+                          📖
+                        </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="font-bold text-slate-900 text-xs truncate">{item.title}</div>
-                        <div className="text-[11px] text-slate-500 truncate">{item.author} · {item.publisher}</div>
-                        <div className="text-[10px] text-amber-700 font-mono font-bold mt-0.5">
-                          ISBN: {item.isbn || '확인중'} · {item.price ? `${item.price.toLocaleString()}원` : ''}
+                        <div className="font-bold text-slate-900 text-xs truncate" title={item.title}>
+                          {item.title}
+                        </div>
+                        <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                          {item.author} · {item.publisher}
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[11px] font-bold text-amber-700">
+                            {item.price ? `${item.price.toLocaleString()}원` : ''}
+                          </span>
+                          {item.rating && (
+                            <span className="flex items-center gap-0.5 text-[10px] text-amber-600 font-bold bg-amber-100/60 px-1.5 py-0.2 rounded">
+                              <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                              {item.rating}
+                            </span>
+                          )}
+                          {item.pubDate && (
+                            <span className="text-[10px] text-slate-400">
+                              {item.pubDate}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </button>
                   ))}
                 </div>
+
+                {/* Bottom Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-200/80">
+                    <button
+                      type="button"
+                      disabled={currentPage <= 1 || isSearching}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 flex items-center gap-1"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" /> 이전 24권
+                    </button>
+                    <span className="text-xs font-bold text-slate-700 font-mono px-2">
+                      페이지 {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={currentPage >= totalPages || isSearching}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 flex items-center gap-1"
+                    >
+                      다음 24권 <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {hasSearched && !isSearching && searchResults.length === 0 && (
               <div className="mt-3 pt-3 border-t border-slate-200 p-3 bg-amber-50/60 rounded-xl text-xs text-amber-900 border border-amber-200">
-                🔍 일치하는 도서 목록을 찾지 못했습니다. 아래 도서 정보 입력칸에 책 제목을 직접 입력하여 등록하실 수 있습니다.
+                🔍 일치하는 도서 목록을 찾지 못했습니다. 다른 키워드로 검색하시거나, 아래 입력란에 책 정보를 직접 입력하실 수 있습니다.
               </div>
             )}
           </div>
 
           {/* Book Details Form */}
-          <form id="book-form" onSubmit={handleSaveBook} className="space-y-4">
+          <form id="book-form" onSubmit={handleSaveBook} className="space-y-4 pt-1">
             
             {/* Reading Status Selector */}
             <div>
@@ -223,9 +384,9 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                 <button
                   type="button"
                   onClick={() => setReadingStatus('reading')}
-                  className={`py-2.5 px-3 rounded-xl border text-center font-bold transition flex items-center justify-center gap-1 ${
+                  className={`py-2 px-3 rounded-xl border text-center font-bold transition flex items-center justify-center gap-1.5 ${
                     readingStatus === 'reading'
-                      ? 'border-amber-500 bg-amber-50 text-amber-800 ring-2 ring-amber-500/20'
+                      ? 'border-amber-500 bg-amber-50 text-amber-800 ring-2 ring-amber-500/20 shadow-sm'
                       : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -235,9 +396,9 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                 <button
                   type="button"
                   onClick={() => setReadingStatus('completed')}
-                  className={`py-2.5 px-3 rounded-xl border text-center font-bold transition flex items-center justify-center gap-1 ${
+                  className={`py-2 px-3 rounded-xl border text-center font-bold transition flex items-center justify-center gap-1.5 ${
                     readingStatus === 'completed'
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-500/20 shadow-sm'
                       : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -247,9 +408,9 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                 <button
                   type="button"
                   onClick={() => setReadingStatus('wishlist')}
-                  className={`py-2.5 px-3 rounded-xl border text-center font-bold transition flex items-center justify-center gap-1 ${
+                  className={`py-2 px-3 rounded-xl border text-center font-bold transition flex items-center justify-center gap-1.5 ${
                     readingStatus === 'wishlist'
-                      ? 'border-purple-500 bg-purple-50 text-purple-800 ring-2 ring-purple-500/20'
+                      ? 'border-purple-500 bg-purple-50 text-purple-800 ring-2 ring-purple-500/20 shadow-sm'
                       : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -266,7 +427,7 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="예: 푸른 사자 와니니"
+                  placeholder="예: 질문하는 과학 상자"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -277,7 +438,7 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                   type="text"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  placeholder="예: 이현 글 / 오윤화 그림"
+                  placeholder="예: 저자명"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -288,18 +449,18 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                   type="text"
                   value={publisher}
                   onChange={(e) => setPublisher(e.target.value)}
-                  placeholder="예: 창비"
+                  placeholder="예: 출판사명"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">ISBN (13자리)</label>
+                <label className="block font-semibold text-slate-700 mb-1">도서/상품번호 (ISBN)</label>
                 <input
                   type="text"
                   value={isbn}
                   onChange={(e) => setIsbn(e.target.value)}
-                  placeholder="9788936442804"
+                  placeholder="예: 9788936442804 또는 상품번호"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -310,7 +471,7 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                   type="number"
                   value={price}
                   onChange={(e) => setPrice(Number(e.target.value))}
-                  placeholder="10800"
+                  placeholder="15000"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
@@ -327,6 +488,7 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
                   <option value="과학/우주">과학/우주</option>
                   <option value="철학/인성">철학/인성</option>
                   <option value="역사/사회">역사/사회</option>
+                  <option value="경제/경영">경제/경영</option>
                   <option value="판타지/모험">판타지/모험</option>
                 </select>
               </div>
@@ -343,16 +505,43 @@ export default function AddBookModal({ isOpen, onClose, onAdded }: AddBookModalP
               />
             </div>
 
-            <div>
-              <label className="block font-semibold text-slate-700 mb-1">태그 (쉼표로 구분)</label>
-              <input
-                type="text"
-                value={tagsInput}
-                onChange={(e) => setTagsInput(e.target.value)}
-                placeholder="성장, 감동, 우정, 모험"
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">표지 이미지 링크</label>
+                <input
+                  type="text"
+                  value={coverUrl}
+                  onChange={(e) => setCoverUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-1">태그 (쉼표로 구분)</label>
+                <input
+                  type="text"
+                  value={tagsInput}
+                  onChange={(e) => setTagsInput(e.target.value)}
+                  placeholder="과학, 인체, 베스트셀러"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
             </div>
+
+            {yes24Url && (
+              <div className="pt-1">
+                <a 
+                  href={yes24Url} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="text-[11px] text-amber-700 hover:text-amber-800 underline inline-flex items-center gap-1 font-semibold"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>YES24 공식 상품 상세페이지 보기</span>
+                </a>
+              </div>
+            )}
 
           </form>
 
