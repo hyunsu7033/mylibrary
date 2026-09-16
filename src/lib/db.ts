@@ -5,7 +5,7 @@ import { INITIAL_BOOKS, INITIAL_PROFILE } from '../data/sampleBooks';
 
 const STORAGE_KEYS = {
   BOOKS: 'mylib_books_v1',
-  PROFILE: 'mylib_profile_v1',
+  PROFILE: 'mylib_profile_v2',
   THOUGHTS: 'mylib_thoughts_v1',
   API_KEY: 'mylib_gemini_api_key',
 };

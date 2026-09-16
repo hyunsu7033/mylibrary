@@ -44,10 +44,10 @@ export interface SavedThought {
 }
 
 export interface PersonalProfile {
-  ownerName: string;      // 서재 주인 이름 (예: 김민준)
-  libraryTitle: string;   // 서재 명칭 (예: 민준이의 지혜의 서재)
+  ownerName: string;      // 서재 주인 이름 (예: 현수)
+  libraryTitle: string;   // 서재 명칭 (예: 현수의 지혜 서재)
   motto: string;          // 독서 좌우명
-  avatarEmoji: string;    // 아바타 이모지 (예: 🦊, 🦉, 🚀)
+  avatarEmoji: string;    // 아바타 이모지 (예: 🚀, 🧑‍🚀)
   geminiApiKey?: string;  // Google AI Studio Key
   readingPoints: number;  // 누적 독서 포인트
   level: number;          // 독서 레벨 (1~10)

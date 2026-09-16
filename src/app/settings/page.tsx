@@ -107,7 +107,7 @@ export default function SettingsPage() {
                 required
                 value={profile.ownerName}
                 onChange={(e) => setProfile({ ...profile, ownerName: e.target.value })}
-                placeholder="예: 김민준"
+                placeholder="예: 현수"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
@@ -119,7 +119,7 @@ export default function SettingsPage() {
                 required
                 value={profile.libraryTitle}
                 onChange={(e) => setProfile({ ...profile, libraryTitle: e.target.value })}
-                placeholder="예: 민준이의 지혜의 서재"
+                placeholder="예: 현수의 지혜 서재"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
@@ -130,7 +130,7 @@ export default function SettingsPage() {
                 type="text"
                 value={profile.motto}
                 onChange={(e) => setProfile({ ...profile, motto: e.target.value })}
-                placeholder="예: 책 속에서 나만의 우주를 발견하자 ✨"
+                placeholder="예: 읽고 꿈꾸며 희망을 빚다 ✨"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
@@ -142,10 +142,11 @@ export default function SettingsPage() {
                 onChange={(e) => setProfile({ ...profile, avatarEmoji: e.target.value })}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
+                <option value="🚀">🚀 우주 탐험가</option>
+                <option value="🧑‍🚀">🧑‍🚀 우주 비행사</option>
                 <option value="🦊">🦊 영리한 여우</option>
                 <option value="🦉">🦉 지혜로운 올빼미</option>
                 <option value="🦁">🦁 용감한 사자</option>
-                <option value="🚀">🚀 우주 탐험가</option>
                 <option value="🌱">🌱 지혜의 새싹</option>
                 <option value="🌙">🌙 밤하늘 꿈별</option>
                 <option value="📚">📚 북마스터</option>
